@@ -1,144 +1,172 @@
-#if !defined(WIN32_LEAN_AND_MEAN)
-#define WIN32_LEAN_AND_MEAN
-#endif
+#include "osrlib.h"
+#include "osrlib_io.h"
 
-#include <GL/glew.h>
-#include <windows.h>
+#include <boost/log/trivial.hpp>
+
 #include <iostream>
-#include <fstream>
+#include <sstream>
 #include <vector>
 
-#include "osrlib.h"
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
-TOffScreenWindowClass::TOffScreenWindowClass() {
-    WNDCLASSEX wincl;
-    wincl.hInstance = GetModuleHandle(0);
-    wincl.lpszClassName = L"OffscreenRendererWindow";
-    wincl.lpfnWndProc = WndProc;
-    wincl.style = CS_OWNDC;
-    wincl.cbSize = sizeof(WNDCLASSEX);
-    wincl.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wincl.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-    wincl.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wincl.lpszMenuName = NULL;
-    wincl.cbClsExtra = 0;
-    wincl.cbWndExtra = 0;
-    wincl.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
-    if (!RegisterClassEx(&wincl)) {
-        throw std::exception();
+void logMatrix(const float* m) {
+    for(int i = 0; i < 4; i ++){
+        std::stringstream ss;
+        for(int j = 0; j < 4; j ++){
+            ss << m[j * 4 + i] << ", ";
+        }
+        BOOST_LOG_TRIVIAL(debug) << ss.str();
     }
 }
 
-void TOffScreenWindowClass::CreateIfNotExists() {
-    if (!s_instance) {
-        s_instance = new TOffScreenWindowClass;
+void logGlMatrices() {
+    std::vector<float> m(16), p(16);
+    glGetFloatv(GL_MODELVIEW_MATRIX, m.data());
+    glGetFloatv(GL_PROJECTION_MATRIX, p.data());
+    logMatrix(m.data());
+    logMatrix(p.data());
+}
+
+void setupRasterization() {
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(1);
+    glDepthFunc(GL_LEQUAL);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+
+    glEnable(GL_LINE_SMOOTH);
+    glLineWidth(1.0);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void setupProjection(const View &view, const Camera &camera) {
+    glViewport(view.viewportTopLeftCorner.x, view.viewportTopLeftCorner.y,
+        view.viewportBottomRightCorner.x, view.viewportBottomRightCorner.y);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(view.frustumLeftRightClippingPlane.x, view.frustumLeftRightClippingPlane.y,
+        view.frustumBottomTopClippingPlane.x, view.frustumBottomTopClippingPlane.y,
+        view.nearVal, view.farVal);
+
+    logGlMatrices();
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(camera.position.x, camera.position.y, camera.position.z,
+        camera.lookAt.x, camera.lookAt.y, camera.lookAt.z,
+        camera.up.x, camera.up.y, camera.up.z);
+}
+
+GLFWwindow* initializeGlfwWindow(const Rendering &rendering, bool offscreen) {
+    if (!glfwInit()) {
+        throw std::runtime_error("Failed to initialize glfw");
+    }
+
+    if (offscreen) {
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    }
+
+    GLFWwindow* window = glfwCreateWindow(
+        rendering.resolution[0], rendering.resolution[1],
+        "opengl", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        throw std::runtime_error("Failed to create glfw window");
+    }
+    glfwMakeContextCurrent(window);
+
+    return window;
+}
+
+void renderToOpenGLWindowLoop(const Rendering &rendering,
+        std::function<void(const Rendering &rendering)> renderFrameFunction) {
+    GLFWwindow* window = initializeGlfwWindow(rendering, false);
+    while (!glfwWindowShouldClose(window)) {
+        renderFrameFunction(rendering);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    glfwTerminate();
+}
+
+void renderToOpenGlWindowOffScreenPass(const Rendering &rendering,
+        const std::string &filename,
+        std::function<void(const Rendering &rendering)> renderFrameFunction) {
+    GLFWwindow* window = initializeGlfwWindow(rendering, true);
+    renderFrameFunction(rendering);
+    dumpPixelsToFile(rendering, filename);
+    glfwTerminate();
+}
+
+GLuint createFramebuffer() {
+    GLuint framebufferId = 0;
+    glGenFramebuffers(1, &framebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+    return framebufferId;
+}
+
+GLuint createRenderTextureForFramebuffer(const Rendering &rendering) {
+    GLuint renderedTextureId;
+    glGenTextures(1, &renderedTextureId);
+    glBindTexture(GL_TEXTURE_2D, renderedTextureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rendering.width(), rendering.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTextureId, 0);
+    return renderedTextureId;
+}
+
+void createDepthBufferForFramebuffer(const Rendering &rendering) {
+    GLuint depthRenderBufferId;
+    glGenRenderbuffers(1, &depthRenderBufferId);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBufferId);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rendering.width(), rendering.height());
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBufferId);
+}
+
+void enableAndValidateFramebuffer() {
+    GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, drawBuffers);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        throw std::runtime_error("Framebuffe is invalid");
     }
 }
 
-TOffScreenWindowClass *TOffScreenWindowClass::s_instance = nullptr;
+void renderToTextureBufferPass(const Rendering &rendering,
+        const std::string &filename,
+        std::function<void(const Rendering &rendering)> renderFrameFunction) {
+    GLFWwindow* window = initializeGlfwWindow(rendering, true);
 
-TOffScreenRenderer::TOffScreenRenderer(int width, int height) : width_(width), height_(height) {
-    TOffScreenWindowClass::CreateIfNotExists();
-    CreateOffScreenContext();
-    PrepareOffScreenBuffers();
-}
-
-TOffScreenRenderer::~TOffScreenRenderer() {
-    ReleaseBuffers();
-    wglMakeCurrent (NULL, NULL) ;
-    wglDeleteContext (hglrc_);
-}
-
-void TOffScreenRenderer::DumpToFile(const char *filename) {
-    std::vector<unsigned char> color(width_ * height_ * 4);
-    ReadFromBuffer(color.data(), nullptr);
-    std::ofstream of(filename, std::ios_base::binary);
-    of.write((char*)color.data(), color.size());
-}
-
-void TOffScreenRenderer::CreateOffScreenContext() {
-    HWND hwnd = CreateWindowEx (
-        0, L"OffscreenRendererWindow", 0,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        width_, height_,
-        HWND_DESKTOP, NULL,
-        GetModuleHandle(0), NULL);
-
-    HDC hdc = GetDC(hwnd);
-
-    PIXELFORMATDESCRIPTOR pfd;
-    ZeroMemory(&pfd, sizeof( pfd ));
-    pfd.nSize = sizeof(pfd);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 24;
-    pfd.cDepthBits = 16;
-    pfd.iLayerType = PFD_MAIN_PLANE;
-    int format = ChoosePixelFormat(hdc, &pfd);
-    SetPixelFormat(hdc, format, &pfd);
-
-    hglrc_ = wglCreateContext(hdc);
-    wglMakeCurrent(hdc, hglrc_);
-    glewInit();
-}
-
-void TOffScreenRenderer::CheckFramebufferStatus() {
-    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    switch( status ) {
-    case GL_FRAMEBUFFER_COMPLETE_EXT:
-        break;
-    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        throw std::exception("GL_FRAMEBUFFER_UNSUPPORTED_EXT!: ERROR");
-        break;
-    default:
-        throw std::exception("Unknown exception!");
+    if (glewInit() != GLEW_OK) {
+        throw std::runtime_error("Failed to initialize GLEW");
     }
+
+    createFramebuffer();
+    auto renderedTextureId = createRenderTextureForFramebuffer(rendering);
+    enableAndValidateFramebuffer();
+
+    renderFrameFunction(rendering);
+
+    dumpTextureToFile(renderedTextureId, filename);
+
+    glfwTerminate();
 }
 
-void TOffScreenRenderer::PrepareOffScreenBuffers() {
-    CheckFramebufferStatus();
-
-    // Create buffers.
-    glGenFramebuffersEXT(1, &fbo_);
-    glGenRenderbuffersEXT(1, &rbo_);
-
-    // Create textures.
-    glGenTextures(1, &render_target_);
-    glBindTexture(GL_TEXTURE_2D, render_target_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-    // Set the render target.
-    glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, fbo_);
-    glBindRenderbufferEXT( GL_RENDERBUFFER_EXT, rbo_);
-    glRenderbufferStorageEXT( GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, width_, height_);
-
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-
-    glFramebufferTexture2DEXT( GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, rbo_, 0 );
-    glFramebufferRenderbufferEXT( GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, rbo_);
-}
-
-void TOffScreenRenderer::ReadFromBuffer(unsigned char* color_rgba, float* depth_buffer) {
-    if (color_rgba) {
-        glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-        glReadPixels(0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, color_rgba);
-    }
-    if (depth_buffer) {
-        glReadBuffer(GL_DEPTH_ATTACHMENT_EXT);
-        glReadPixels(0, 0, width_, height_, GL_DEPTH_COMPONENT, GL_FLOAT, depth_buffer);
-    }
-}
-
-void TOffScreenRenderer::ReleaseBuffers() {
-    glDeleteTextures(1, &render_target_);
-    glDeleteFramebuffersEXT(1, &fbo_);
-    glDeleteRenderbuffersEXT(1, &rbo_);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0 );
+std::tuple<glm::fvec3, glm::fvec3> Mesh::getExtents() const {
+    glm::fvec3 min(std::numeric_limits<float>::max());
+    glm::fvec3 max(std::numeric_limits<float>::min());
+    std::for_each(std::begin(vertices), std::end(vertices),
+        [&max, &min](const glm::fvec3 &v) {
+            min.x = std::min(v.x, min.x);
+            min.y = std::min(v.y, min.y);
+            min.z = std::min(v.z, min.z);
+            max.x = std::max(v.x, max.x);
+            max.y = std::max(v.y, max.y);
+            max.z = std::max(v.z, max.z);
+        });
+    return std::make_tuple(min, max);
 }

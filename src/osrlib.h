@@ -1,41 +1,73 @@
-#if !defined(WIN32_LEAN_AND_MEAN)
-#define WIN32_LEAN_AND_MEAN
-#endif
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <GL/glew.h>
-#include <windows.h>
+#include <GLFW/glfw3.h>
 
-class TOffScreenWindowClass {
-private:
-    static TOffScreenWindowClass *s_instance;
-    TOffScreenWindowClass();
+#include <vector>
+#include <functional>
+
+#ifndef OSRLIB_H
+#define OSRLIB_H
+
+class Rendering {
 public:
-    static void CreateIfNotExists();
+    glm::ivec2 resolution;
+    int width() const { return resolution[0]; }
+    int height() const { return resolution[1]; }
 };
 
-class TOffScreenRenderer {
+class View {
 public:
-    TOffScreenRenderer(int width, int height);
-
-    ~TOffScreenRenderer();
-
-    void DumpToFile(const char *filename);
-
-private:
-
-    void CreateOffScreenContext();
-
-    void CheckFramebufferStatus();
-
-    void PrepareOffScreenBuffers();
-
-    void ReadFromBuffer(unsigned char* color_rgba, float* depth_buffer);
-
-    void ReleaseBuffers();
-
-    HGLRC hglrc_;
-    GLuint fbo_;
-    GLuint rbo_;
-    GLuint render_target_;
-    int width_, height_;
+    glm::ivec2 viewportTopLeftCorner;
+    glm::ivec2 viewportBottomRightCorner;
+    glm::dvec2 frustumLeftRightClippingPlane;
+    glm::dvec2 frustumBottomTopClippingPlane;
+    double nearVal, farVal;
 };
+
+class Camera {
+public:
+    glm::dvec3 position;
+    glm::dvec3 lookAt;
+    glm::dvec3 up;
+};
+
+class Mesh {
+public:
+    std::vector<glm::fvec3> vertices;
+    std::vector<glm::fvec3> normals;
+    std::vector<glm::fvec3> texcoords;
+    std::vector<glm::u32vec3> face_vertices;
+    std::vector<glm::u32vec3> face_normals;
+    std::vector<glm::u32vec3> face_texcoords;
+
+    std::tuple<glm::fvec3, glm::fvec3> getExtents() const;
+};
+
+class ImageBuffer {
+    const int w, h;
+    std::vector<u_int8_t> buffer;
+public:
+    ImageBuffer(int _w, int _h) : w(_w), h(_h), buffer(w * h * 3) {}
+    const u_int8_t *data() const { return buffer.data(); }
+    u_int8_t *data() { return buffer.data(); }
+    int width() const { return w; }
+    int height() const { return h; }
+    int size() const { return buffer.size(); }
+};
+
+void setupRasterization();
+void setupProjection(const View &view, const Camera &camera);
+void renderToOpenGLWindowLoop(const Rendering &rendering,
+        std::function<void(const Rendering &rendering)> renderFrameFunction);
+void renderToOpenGlWindowOffScreenPass(const Rendering &rendering,
+        const std::string &filename,
+        std::function<void(const Rendering &rendering)> renderFrameFunction);
+void renderToTextureBufferPass(const Rendering &rendering,
+        const std::string &filename,
+        std::function<void(const Rendering &rendering)> renderFrameFunction);
+
+#endif // OSRLIB_H
