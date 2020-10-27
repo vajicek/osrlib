@@ -57,8 +57,8 @@ void renderYaml(const std::string yaml_file, const std::string output_file) {
     const std::map<std::string, Mesh> mesh_map = getMeshMap(root);
     const std::vector<RenderNode> render_nodes = getRenderNodes(root, mesh_map);
     const glm::ivec2 resolution = root["rendering"]["resolution"].as<glm::ivec2>();
-    const glm::fvec3 camera_position = root["camera"]["position"].as<glm::fvec3>();
-    const glm::fvec3 camera_lookat = root["camera"]["lookat"].as<glm::fvec3>();
+    const glm::fvec3 camera_position = root["rendering"]["camera"]["position"].as<glm::fvec3>();
+    const glm::fvec3 camera_lookat = root["rendering"]["camera"]["lookat"].as<glm::fvec3>();
     renderToTextureBufferPass({resolution, camera_position, camera_lookat},
         output_file,
         [&render_nodes](const Rendering &rendering){ renderNodes(rendering, render_nodes); });

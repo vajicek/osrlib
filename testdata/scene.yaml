@@ -1,5 +1,8 @@
 rendering:
   resolution: [1024, 1024]
+  camera:
+    position: [0.3, 0.3, 0.3]
+    lookat: [0, 0, 0]
 meshes:
   -
     id: bunny
@@ -7,9 +10,6 @@ meshes:
   -
     id: pawn
     file: ChessPawn.obj
-camera:
-  position: [0.3, 0.3, 0.3]
-  lookat: [0, 0, 0]
 nodes:
   -
     mesh: bunny
