@@ -1,7 +1,7 @@
 #ifndef OSRLIB_RENDERING_H
 #define OSRLIB_RENDERING_H
 
-#include "osrlib.h"
+#include "core.h"
 
 GLuint createIndicesBuffer(const Mesh &mesh);
 void renderMesh(const Rendering &rendering, const Mesh &mesh);

@@ -1,4 +1,4 @@
-#include "osrlib.h"
+#include "core.h"
 
 #ifndef OSRLIB_TEST_H
 #define OSRLIB_TEST_H

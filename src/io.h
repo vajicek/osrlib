@@ -1,4 +1,4 @@
-#include "osrlib.h"
+#include "core.h"
 
 #ifndef OSRLIB_IO_H
 #define OSRLIB_IO_H

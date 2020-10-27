@@ -1,4 +1,4 @@
-#include "osrlib_io.h"
+#include "io.h"
 
 #include <GL/glew.h>
 #include <boost/algorithm/string.hpp>

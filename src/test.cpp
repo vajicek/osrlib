@@ -1,6 +1,6 @@
-#include "osrlib_test.h"
-#include "osrlib_io.h"
-#include "osrlib_rendering.h"
+#include "test.h"
+#include "io.h"
+#include "rendering.h"
 
 #include <GL/glew.h>
 

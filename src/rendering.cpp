@@ -1,4 +1,4 @@
-#include "osrlib_rendering.h"
+#include "rendering.h"
 
 #include <GL/glew.h>
 

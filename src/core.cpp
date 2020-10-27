@@ -1,5 +1,5 @@
-#include "osrlib.h"
-#include "osrlib_io.h"
+#include "core.h"
+#include "io.h"
 
 #include <boost/log/trivial.hpp>
 

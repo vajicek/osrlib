@@ -7,20 +7,12 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <map>
 #include <functional>
 #include <optional>
 
-#ifndef OSRLIB_H
-#define OSRLIB_H
-
-class Rendering {
-public:
-    const glm::ivec2 resolution;
-    const glm::fvec3 camera_position;
-    const glm::fvec3 camera_lookat;
-    int width() const { return resolution[0]; }
-    int height() const { return resolution[1]; }
-};
+#ifndef OSRLIB_CORE_H
+#define OSRLIB_CORE_H
 
 class View {
 public:
@@ -71,6 +63,17 @@ public:
     int size() const { return buffer.size(); }
 };
 
+class Rendering {
+public:
+    glm::ivec2 resolution;
+    glm::fvec3 camera_position;
+    glm::fvec3 camera_lookat;
+    std::vector<RenderNode> render_nodes;
+    std::map<std::string, Mesh> mesh_map;
+    int width() const { return resolution[0]; }
+    int height() const { return resolution[1]; }
+};
+
 void setupRasterization();
 void setupProjection(const View &view, const Camera &camera);
 void renderToOpenGLWindowLoop(const Rendering &rendering,
@@ -83,4 +86,4 @@ void renderToTextureBufferPass(const Rendering &rendering,
         const std::string &filename,
         std::function<void(const Rendering &rendering)> renderFrameFunction);
 
-#endif // OSRLIB_H
+#endif // OSRLIB_CORE_H

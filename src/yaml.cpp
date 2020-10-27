@@ -1,6 +1,8 @@
-#include "osrlib_yaml.h"
-#include "osrlib_io.h"
-#include "osrlib_rendering.h"
+#include "yaml.h"
+#include "io.h"
+#include "rendering.h"
+
+#include <iostream>
 
 #include <yaml-cpp/yaml.h>
 
@@ -52,14 +54,30 @@ std::vector<RenderNode> getRenderNodes(const YAML::Node &root, const std::map<st
     return render_nodes;
 }
 
-void renderYaml(const std::string yaml_file, const std::string output_file) {
+void loadYaml(Rendering *rendering, const std::string yaml_file) {
     const YAML::Node root = YAML::LoadFile(yaml_file);
-    const std::map<std::string, Mesh> mesh_map = getMeshMap(root);
-    const std::vector<RenderNode> render_nodes = getRenderNodes(root, mesh_map);
-    const glm::ivec2 resolution = root["rendering"]["resolution"].as<glm::ivec2>();
-    const glm::fvec3 camera_position = root["rendering"]["camera"]["position"].as<glm::fvec3>();
-    const glm::fvec3 camera_lookat = root["rendering"]["camera"]["lookat"].as<glm::fvec3>();
-    renderToTextureBufferPass({resolution, camera_position, camera_lookat},
+    rendering->mesh_map = getMeshMap(root);
+    rendering->render_nodes = getRenderNodes(root, rendering->mesh_map);
+    rendering->resolution = root["rendering"]["resolution"].as<glm::ivec2>();
+    rendering->camera_position = root["rendering"]["camera"]["position"].as<glm::fvec3>();
+    rendering->camera_lookat = root["rendering"]["camera"]["lookat"].as<glm::fvec3>();
+}
+
+void renderYaml(const std::string yaml_file, const std::string output_file) {
+    Rendering rendering;
+    loadYaml(&rendering, yaml_file);
+    renderToTextureBufferPass(rendering,
         output_file,
-        [&render_nodes](const Rendering &rendering){ renderNodes(rendering, render_nodes); });
+        [](const Rendering &rendering){ renderNodes(rendering, rendering.render_nodes); });
+}
+
+void viewYaml(const std::string yaml_file) {
+    Rendering rendering;
+    loadYaml(&rendering, yaml_file);
+    renderToOpenGLWindowLoop(rendering,
+        [](const Rendering &rendering) {
+            renderNodes(rendering, rendering.render_nodes);
+        },
+        []() {
+        });
 }

@@ -1,8 +1,8 @@
-#include "osrlib.h"
-#include "osrlib_test.h"
-#include "osrlib_io.h"
-#include "osrlib_rendering.h"
-#include "osrlib_yaml.h"
+#include "core.h"
+#include "test.h"
+#include "io.h"
+#include "rendering.h"
+#include "yaml.h"
 
 #include <boost/program_options.hpp>
 
@@ -30,10 +30,14 @@ int interpretCommandLineInterface(po::options_description *options_description,
         po::variables_map *variables_map) {
     if (variables_map->count(ARG_HELP)) {
         std::cout << *options_description << "\n";
-    } else if (variables_map->count(ARG_YAML) && variables_map->count(ARG_OUTPUT)) {
+    } else if (variables_map->count(ARG_YAML)) {
         auto yaml_filename = (*variables_map)[ARG_YAML].as<std::string>();
-        auto output_filename = (*variables_map)[ARG_OUTPUT].as<std::string>();
-        renderYaml(yaml_filename, output_filename);
+        if (variables_map->count(ARG_OUTPUT)) {
+            auto output_filename = (*variables_map)[ARG_OUTPUT].as<std::string>();
+            renderYaml(yaml_filename, output_filename);
+        } else {
+            viewYaml(yaml_filename);
+        }
     }
     return 0;
 }

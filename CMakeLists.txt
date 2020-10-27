@@ -37,12 +37,12 @@ IF (YAML_CPP_INCLUDE_DIR)
 ENDIF()
 
 # Sources
-SET(SRC src/osrlib.cpp
-  src/osrlib_test.cpp
-  src/osrlib_rendering.cpp
-  src/osrlib_io.cpp
-  src/osrlib_yaml.cpp
-  src/osrlib_main.cpp)
+SET(SRC src/core.cpp
+  src/test.cpp
+  src/rendering.cpp
+  src/io.cpp
+  src/yaml.cpp
+  src/main.cpp)
 
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
