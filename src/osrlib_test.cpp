@@ -1,6 +1,10 @@
 #include "osrlib_test.h"
+#include "osrlib_io.h"
+#include "osrlib_rendering.h"
 
 #include <GL/glew.h>
+
+#include <chrono>
 
 static const GLfloat g_vertex_buffer_data[] = {
     -1.0f,-1.0f,-1.0f, // triangle 1 : begin
@@ -50,7 +54,7 @@ void drawCube() {
     glDrawArrays(GL_LINE_LOOP, 0, 12 * 3);
 }
 
-void renderExample(const Rendering &rendering) {
+void renderTest(const Rendering &rendering) {
     View view {{0, 0}, {rendering.width(), rendering.height()},
         {-1.0, 1.0}, {-1.0, 1.0},
         1.0, 100.0};
@@ -60,4 +64,34 @@ void renderExample(const Rendering &rendering) {
     setupRasterization();
     setupProjection(view, camera);
     drawCube();
+}
+
+void interactiveTest() {
+    Mesh mesh;
+    loadObj(&mesh, "../testdata/bunny.obj");
+    mesh.computeNormals();
+
+    std::vector<RenderNode> nodes {{&mesh, std::nullopt, {0, 1, 0, 0}, {0, -0.1, -0.02}}};
+    auto start = std::chrono::system_clock::now();
+
+    renderToOpenGLWindowLoop({{1 * 512, 1 * 512}},
+        [&nodes](const Rendering &rendering) {
+            renderNodes(rendering, nodes);
+        },
+        [&nodes, &start]() {
+            auto now = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = now - start;
+            for (auto &render_node: nodes) {
+                render_node.angle_axis.w = elapsed_seconds.count() * 20;
+            }
+        });
+}
+
+void renderTest() {
+    Mesh mesh;
+    loadObj(&mesh, "../testdata/bunny.obj");
+    mesh.computeNormals();
+
+    renderToTextureBufferPass({{2 * 512, 2 * 512}}, "bunny.ppm",
+        [&mesh](const Rendering &rendering){ renderMesh(rendering, mesh); });
 }

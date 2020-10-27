@@ -15,7 +15,9 @@
 
 class Rendering {
 public:
-    glm::ivec2 resolution;
+    const glm::ivec2 resolution;
+    const glm::fvec3 camera_position;
+    const glm::fvec3 camera_lookat;
     int width() const { return resolution[0]; }
     int height() const { return resolution[1]; }
 };
@@ -51,7 +53,7 @@ public:
 
 class RenderNode {
 public:
-    Mesh *mesh;
+    const Mesh *mesh;
     std::optional<GLuint> elementBufferId;
     glm::fvec4 angle_axis;
     glm::fvec3 position;

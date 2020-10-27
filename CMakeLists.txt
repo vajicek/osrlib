@@ -3,10 +3,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(osrlib)
 
 # Dependencies
-FIND_PACKAGE(Boost 1.36.0 COMPONENTS log)
+FIND_PACKAGE(Boost 1.36.0 COMPONENTS log program_options)
 IF(Boost_FOUND)
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_LIBRARIES(${Boost_LOG_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+  LINK_LIBRARIES(${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
   SET(Boost_USE_STATIC_LIBS ON)
 ENDIF()
 
@@ -41,6 +41,7 @@ SET(SRC src/osrlib.cpp
   src/osrlib_test.cpp
   src/osrlib_rendering.cpp
   src/osrlib_io.cpp
+  src/osrlib_yaml.cpp
   src/osrlib_main.cpp)
 
 SET(CMAKE_CXX_STANDARD 17)

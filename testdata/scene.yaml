@@ -1,14 +1,29 @@
+rendering:
+  resolution: [1024, 1024]
 meshes:
   -
     id: bunny
-    file: ../testdata/bunny.obj
+    file: bunny.obj
+  -
+    id: pawn
+    file: ChessPawn.obj
+camera:
+  position: [0.3, 0.3, 0.3]
+  lookat: [0, 0, 0]
 nodes:
   -
     mesh: bunny
     translation: [0.2, -0.15, 0]
+    rotation: [0, 1, 0, 0]
   -
     mesh: bunny
     translation: [0, -0.15, 0]
+    rotation: [0, 1, 0, 90]
   -
     mesh: bunny
     translation: [0.2, -0.15, -0.2]
+    rotation: [0, 1, 0, -90]
+  -
+    mesh: pawn
+    translation: [-0.1, -0.15, 0.3]
+    rotation: [0, 1, 0, 0]

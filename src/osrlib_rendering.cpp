@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <algorithm>
+#include <iostream>
 
 GLuint createIndicesBuffer(const Mesh &mesh) {
     GLuint element_buffer_id;
@@ -85,6 +86,7 @@ void drawNode(const RenderNode &render_node) {
 
     auto &angle_axis = render_node.angle_axis;
     auto &position = render_node.position;
+
     glTranslatef(position.x, position.y, position.z);
     glRotatef(angle_axis.w, angle_axis.x, angle_axis.y, angle_axis.z);
     drawMesh(*render_node.mesh, render_node.elementBufferId.value());
@@ -103,8 +105,8 @@ void renderNodes(const Rendering &rendering, const std::vector<RenderNode> &rend
     View view {{0, 0}, {rendering.width(), rendering.height()},
         {-0.2, 0.2}, {-0.2, 0.2},
         0.2, 100000.0};
-    Camera camera {{0, 0, 0.3},
-        {0, 0, 0},
+    Camera camera {rendering.camera_position,
+        rendering.camera_lookat,
         {0, -1, 0}};
     setupRasterization();
     setupProjection(view, camera);
