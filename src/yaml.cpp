@@ -4,7 +4,10 @@
 
 #include <iostream>
 
+#include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
+
+namespace fs = boost::filesystem;
 
 namespace YAML {
     template<class T, int C>
@@ -28,12 +31,12 @@ namespace YAML {
     };
 }
 
-std::map<std::string, Mesh> getMeshMap(const YAML::Node &root) {
+std::map<std::string, Mesh> getMeshMap(const YAML::Node &root, fs::path root_dir) {
     std::map<std::string, Mesh> mesh_map;
     for (auto mesh_node : root["meshes"]) {
         auto mesh_id = mesh_node["id"].as<std::string>();
         auto file = mesh_node["file"].as<std::string>();
-        loadObj(&mesh_map[mesh_id], file);
+        loadObj(&mesh_map[mesh_id], (root_dir / file).c_str());
         mesh_map[mesh_id].computeNormals();
     }
     return mesh_map;
@@ -56,7 +59,7 @@ std::vector<RenderNode> getRenderNodes(const YAML::Node &root, const std::map<st
 
 void loadYaml(Rendering *rendering, const std::string yaml_file) {
     const YAML::Node root = YAML::LoadFile(yaml_file);
-    rendering->mesh_map = getMeshMap(root);
+    rendering->mesh_map = getMeshMap(root, fs::path(yaml_file).parent_path());
     rendering->render_nodes = getRenderNodes(root, rendering->mesh_map);
     rendering->resolution = root["rendering"]["resolution"].as<glm::ivec2>();
     rendering->camera_position = root["rendering"]["camera"]["position"].as<glm::fvec3>();
