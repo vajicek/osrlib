@@ -1,0 +1,14 @@
+meshes:
+  -
+    id: bunny
+    file: ../testdata/bunny.obj
+nodes:
+  -
+    mesh: bunny
+    translation: [0.2, -0.15, 0]
+  -
+    mesh: bunny
+    translation: [0, -0.15, 0]
+  -
+    mesh: bunny
+    translation: [0.2, -0.15, -0.2]
