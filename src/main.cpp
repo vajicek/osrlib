@@ -1,7 +1,3 @@
-#include "core.h"
-#include "test.h"
-#include "io.h"
-#include "rendering.h"
 #include "yaml.h"
 
 #include <boost/program_options.hpp>
