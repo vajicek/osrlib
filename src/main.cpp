@@ -49,42 +49,6 @@ int commandLineInterface(int argc, char* argv[]) {
     return interpretCommandLineInterface(&options_description, &variables_map);
 }
 
-/*
-int main() {
-    Mesh mesh;
-    loadObj(&mesh, "../testdata/ChessPawn.obj");
-    mesh.computeNormals();
-
-    renderToTextureBufferPass({{2 * 512, 2 * 512}}, "bunny.ppm",
-        [&mesh](const Rendering &rendering){ renderMesh(rendering, mesh); });
-    return 1;
+int main(int argc, char* argv[]) {
+    return commandLineInterface(argc, argv);
 }
-*/
-
-int main(int argc, char* argv[]) { return commandLineInterface(argc, argv); }
-
-//renderToOpenGLWindowLoop({{1 * 512, 1 * 512}}, renderExample);
-//renderToOpenGlWindowOffScreenPass(rendering, "filename.ppm", renderExample);
-//renderToOpenGlWindowOffScreenPass({{1 * 512, 1 * 512}}, "filename1.ppm", renderExample);
-//renderToOpenGlWindowOffScreenPass({{2 * 512, 2 * 512}}, "filename2.ppm", renderExample);
-//renderToOpenGlWindowOffScreenPass({{4 * 512, 4 * 512}}, "filename4.ppm", renderExample);
-//renderToOpenGlWindowOffScreenPass({{2048, 2048}}, "filename4.ppm", renderExample);
-//renderToOpenGlWindowOffScreenPass({{8 * 512, 8 * 512}}, "filename8.ppm", renderExample);
-
-//renderToOpenGLWindowLoop({{4 * 512, 4 * 512}}, RenderExample);
-
-//renderToTextureBufferPass({{1 * 512, 1 * 512}}, "filename1.ppm", renderExample);
-// renderToTextureBufferPass({{2 * 512, 2 * 512}}, "filename2.ppm", renderExample);
-// renderToTextureBufferPass({{4 * 512, 4 * 512}}, "filename4.ppm", renderExample);
-// renderToTextureBufferPass({{8 * 512, 8 * 512}}, "filename8.ppm", renderExample);
-
-// Mesh mesh;
-// loadObj(&mesh, "../testdata/bunny.obj");
-// mesh.computeNormals();
-
-// renderToTextureBufferPass({{2 * 512, 2 * 512}}, "bunny.ppm",
-//     [&mesh](const Rendering &rendering){ renderMesh(rendering, mesh); });
-
-// renderTest();
-
-//renderYaml("../testdata/scene.yaml", "bunny.ppm");

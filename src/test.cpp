@@ -92,6 +92,7 @@ void renderTest() {
     loadObj(&mesh, "../testdata/bunny.obj");
     mesh.computeNormals();
 
-    renderToTextureBufferPass({{2 * 512, 2 * 512}}, "bunny.ppm",
-        [&mesh](const Rendering &rendering){ renderMesh(rendering, mesh); });
+    renderToTextureBufferPass({{2 * 512, 2 * 512}},
+        [&mesh](const Rendering &rendering){ renderMesh(rendering, mesh); },
+        [](const ImageBuffer &image_buffer){ dumpToPpmFile(image_buffer, "bunny.ppm"); });
 }

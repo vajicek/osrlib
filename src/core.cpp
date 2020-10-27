@@ -99,15 +99,6 @@ void renderToOpenGLWindowLoop(const Rendering &rendering,
     glfwTerminate();
 }
 
-void renderToOpenGlWindowOffScreenPass(const Rendering &rendering,
-        const std::string &filename,
-        std::function<void(const Rendering &rendering)> renderFrameFunction) {
-    GLFWwindow* window = initializeGlfwWindow(rendering, true);
-    renderFrameFunction(rendering);
-    dumpPixelsToFile(rendering, filename);
-    glfwTerminate();
-}
-
 GLuint createFramebuffer() {
     GLuint framebufferId = 0;
     glGenFramebuffers(1, &framebufferId);
@@ -142,9 +133,15 @@ void enableAndValidateFramebuffer() {
     }
 }
 
+void readPixels(ImageBuffer *img) {
+    glReadPixels(0, 0, img->width(), img->height(),
+        GL_RGB, GL_UNSIGNED_BYTE,
+        img->data());
+}
+
 void renderToTextureBufferPass(const Rendering &rendering,
-        const std::string &filename,
-        std::function<void(const Rendering &rendering)> renderFrameFunction) {
+        std::function<void(const Rendering &rendering)> renderFrameFunction,
+        std::function<void(const ImageBuffer &img)> resultFunction) {
     GLFWwindow* window = initializeGlfwWindow(rendering, true);
 
     createFramebuffer();
@@ -154,7 +151,7 @@ void renderToTextureBufferPass(const Rendering &rendering,
 
     renderFrameFunction(rendering);
 
-    dumpTextureToFile(renderedTextureId, filename);
+    resultFunction(dumpTextureToImageBuffer(renderedTextureId));
 
     glfwTerminate();
 }

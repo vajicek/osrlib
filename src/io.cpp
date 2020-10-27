@@ -31,17 +31,7 @@ void dumpToPpmFile(const ImageBuffer &img, const std::string &filename) {
     fout.close();
 }
 
-void dumpPixelsToFile(const Rendering &rendering, const std::string &filename) {
-    ImageBuffer img(rendering.width(), rendering.height());
-
-    glReadPixels(0, 0, rendering.width(), rendering.height(),
-        GL_RGB, GL_UNSIGNED_BYTE,
-        img.data());
-
-    dumpToPpmFile(img, filename);
-}
-
-void dumpTextureToFile(GLuint renderedTextureId, const std::string &filename) {
+ImageBuffer dumpTextureToImageBuffer(GLuint renderedTextureId) {
     GLint width, height;
     glBindTexture(GL_TEXTURE_2D, renderedTextureId);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
@@ -51,6 +41,11 @@ void dumpTextureToFile(GLuint renderedTextureId, const std::string &filename) {
     glActiveTexture(GL_TEXTURE0);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data());
 
+    return img;
+}
+
+void dumpTextureToFile(GLuint renderedTextureId, const std::string &filename) {
+    ImageBuffer img = dumpTextureToImageBuffer(renderedTextureId);
     dumpToPpmFile(img, filename);
 }
 

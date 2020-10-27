@@ -41,11 +41,13 @@ SET(SRC src/core.cpp
   src/test.cpp
   src/rendering.cpp
   src/io.cpp
-  src/yaml.cpp
-  src/main.cpp)
+  src/yaml.cpp)
 
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+ADD_LIBRARY(${PROJECT_NAME} ${SRC})
+
 # Add test binary
-ADD_EXECUTABLE(${PROJECT_NAME} ${SRC})
+ADD_EXECUTABLE(${PROJECT_NAME}cli src/main.cpp)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}cli ${PROJECT_NAME})

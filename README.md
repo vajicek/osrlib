@@ -20,11 +20,11 @@ cmake .. && make
 Render to file
 
 ```bash
-osrlib --yaml testdata/scene.yaml --output bunny.ppm
+osrlibcli --yaml testdata/scene.yaml --output bunny.ppm
 ```
 
 Run viewer
 
 ```bash
-osrlib --yaml testdata/scene.yaml
+osrlibcli --yaml testdata/scene.yaml
 ```

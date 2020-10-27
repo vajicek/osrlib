@@ -79,11 +79,8 @@ void setupProjection(const View &view, const Camera &camera);
 void renderToOpenGLWindowLoop(const Rendering &rendering,
         std::function<void(const Rendering &rendering)> renderFrameFunction,
         std::function<void()> updateFrameFunction);
-void renderToOpenGlWindowOffScreenPass(const Rendering &rendering,
-        const std::string &filename,
-        std::function<void(const Rendering &rendering)> renderFrameFunction);
 void renderToTextureBufferPass(const Rendering &rendering,
-        const std::string &filename,
-        std::function<void(const Rendering &rendering)> renderFrameFunction);
+        std::function<void(const Rendering &rendering)> renderFrameFunction,
+        std::function<void(const ImageBuffer &img)> resultFunction);
 
 #endif // OSRLIB_CORE_H
