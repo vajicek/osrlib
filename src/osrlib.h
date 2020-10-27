@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <functional>
+#include <optional>
 
 #ifndef OSRLIB_H
 #define OSRLIB_H
@@ -45,6 +46,15 @@ public:
     std::vector<glm::u32vec3> face_texcoords;
 
     std::tuple<glm::fvec3, glm::fvec3> getExtents() const;
+    void computeNormals();
+};
+
+class RenderNode {
+public:
+    Mesh *mesh;
+    std::optional<GLuint> elementBufferId;
+    glm::fvec4 angle_axis;
+    glm::fvec3 position;
 };
 
 class ImageBuffer {
@@ -62,7 +72,8 @@ public:
 void setupRasterization();
 void setupProjection(const View &view, const Camera &camera);
 void renderToOpenGLWindowLoop(const Rendering &rendering,
-        std::function<void(const Rendering &rendering)> renderFrameFunction);
+        std::function<void(const Rendering &rendering)> renderFrameFunction,
+        std::function<void()> updateFrameFunction);
 void renderToOpenGlWindowOffScreenPass(const Rendering &rendering,
         const std::string &filename,
         std::function<void(const Rendering &rendering)> renderFrameFunction);

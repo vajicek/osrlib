@@ -37,5 +37,8 @@ SET(SRC src/osrlib.cpp
   src/osrlib_io.cpp
   src/osrlib_main.cpp)
 
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Add test binary
 ADD_EXECUTABLE(${PROJECT_NAME} ${SRC})

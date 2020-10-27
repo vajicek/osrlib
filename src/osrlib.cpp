@@ -79,14 +79,20 @@ GLFWwindow* initializeGlfwWindow(const Rendering &rendering, bool offscreen) {
     }
     glfwMakeContextCurrent(window);
 
+    if (glewInit() != GLEW_OK) {
+        throw std::runtime_error("Failed to initialize GLEW");
+    }
+
     return window;
 }
 
 void renderToOpenGLWindowLoop(const Rendering &rendering,
-        std::function<void(const Rendering &rendering)> renderFrameFunction) {
+        std::function<void(const Rendering &rendering)> renderFrameFunction,
+        std::function<void()> updateFrameFunction) {
     GLFWwindow* window = initializeGlfwWindow(rendering, false);
     while (!glfwWindowShouldClose(window)) {
         renderFrameFunction(rendering);
+        updateFrameFunction();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -141,12 +147,9 @@ void renderToTextureBufferPass(const Rendering &rendering,
         std::function<void(const Rendering &rendering)> renderFrameFunction) {
     GLFWwindow* window = initializeGlfwWindow(rendering, true);
 
-    if (glewInit() != GLEW_OK) {
-        throw std::runtime_error("Failed to initialize GLEW");
-    }
-
     createFramebuffer();
     auto renderedTextureId = createRenderTextureForFramebuffer(rendering);
+    createDepthBufferForFramebuffer(rendering);
     enableAndValidateFramebuffer();
 
     renderFrameFunction(rendering);
@@ -159,14 +162,49 @@ void renderToTextureBufferPass(const Rendering &rendering,
 std::tuple<glm::fvec3, glm::fvec3> Mesh::getExtents() const {
     glm::fvec3 min(std::numeric_limits<float>::max());
     glm::fvec3 max(std::numeric_limits<float>::min());
-    std::for_each(std::begin(vertices), std::end(vertices),
-        [&max, &min](const glm::fvec3 &v) {
-            min.x = std::min(v.x, min.x);
-            min.y = std::min(v.y, min.y);
-            min.z = std::min(v.z, min.z);
-            max.x = std::max(v.x, max.x);
-            max.y = std::max(v.y, max.y);
-            max.z = std::max(v.z, max.z);
-        });
+    for (auto v : vertices) {
+        min = glm::min(v, min);
+        max = glm::max(v, max);
+    }
     return std::make_tuple(min, max);
+}
+
+glm::fvec3 triangleNormal(const glm::fvec3 &v1, const glm::fvec3 &v2, const glm::fvec3 &v3) {
+    return glm::normalize(glm::cross(glm::normalize(v1 - v2), glm::normalize(v3 - v2)));
+}
+
+glm::fvec3 triangleNormal(const std::vector<glm::fvec3> &vertices, const glm::u32vec3 &face_vertices) {
+    return triangleNormal(vertices[face_vertices[0]],
+        vertices[face_vertices[1]],
+        vertices[face_vertices[2]]);
+}
+
+std::vector<std::vector<uint32_t>> getVertexToFacesMapping(const Mesh &mesh) {
+    std::vector<std::vector<uint32_t>> vertex_faces(mesh.vertices.size());
+    for (auto &v : mesh.face_vertices) {
+        auto face_index = &v - mesh.face_vertices.data();
+        vertex_faces[v[0]].push_back(face_index);
+        vertex_faces[v[1]].push_back(face_index);
+        vertex_faces[v[2]].push_back(face_index);
+    }
+    return vertex_faces;
+}
+
+glm::fvec3 computeVertexNormal(const Mesh &mesh, const std::vector<uint32_t> &incident_face_indices) {
+    glm::fvec3 normal_sum(0);
+    for (auto face_index : incident_face_indices) {
+        auto face_vertices = mesh.face_vertices[face_index];
+        normal_sum += triangleNormal(mesh.vertices, face_vertices);
+    }
+    return glm::normalize(normal_sum);
+}
+
+void Mesh::computeNormals() {
+    std::vector<std::vector<uint32_t>> vertex_faces = getVertexToFacesMapping(*this);
+    for (auto &v : vertices) {
+        auto vertex_index = &v - vertices.data();
+        auto incident_face_indices = vertex_faces[vertex_index];
+        auto vertex_normal = computeVertexNormal(*this, incident_face_indices);
+        this->normals.push_back(vertex_normal);
+    }
 }
