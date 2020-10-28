@@ -15,7 +15,7 @@ void dumpBufferToRGBFile(const ImageBuffer &img, const std::string &filename) {
     fout.close();
 }
 
-void dumpToPpmFile(const ImageBuffer &img, const std::string &filename) {
+void dumpBufferToPpmFile(const ImageBuffer &img, const std::string &filename) {
     assert(img.width() * img.height() * 3 == img.size());
     std::ofstream fout;
     fout.open(filename, std::ios::out);
@@ -44,9 +44,9 @@ ImageBuffer dumpTextureToImageBuffer(GLuint renderedTextureId) {
     return img;
 }
 
-void dumpTextureToFile(GLuint renderedTextureId, const std::string &filename) {
+void dumpTextureToPpmFile(GLuint renderedTextureId, const std::string &filename) {
     ImageBuffer img = dumpTextureToImageBuffer(renderedTextureId);
-    dumpToPpmFile(img, filename);
+    dumpBufferToPpmFile(img, filename);
 }
 
 float strToFloat(const std::string &token) {
@@ -57,6 +57,27 @@ uint32_t strToUInt32(const std::string &token) {
     return atoi(token.c_str()) - 1;
 }
 
+bool parseLine(std::string *line, Mesh *mesh) {
+    boost::trim(*line);
+    if (line->rfind("#") == 0) {
+        return true;
+    }
+    std::vector<std::string> tokens;
+    boost::split(tokens, *line, [](char c){ return c == ' '; });
+    if (tokens[0] == "v") {
+        mesh->vertices.push_back(glm::fvec3(
+            strToFloat(tokens[1]),
+            strToFloat(tokens[2]),
+            strToFloat(tokens[3])));
+    } else if (tokens[0] == "f") {
+        mesh->face_vertices.push_back(glm::ivec3(
+            strToUInt32(tokens[1]),
+            strToUInt32(tokens[2]),
+            strToUInt32(tokens[3])));
+    }
+    return true;
+}
+
 void loadObj(Mesh *mesh, const std::string &filename) {
     assert(mesh != nullptr);
     std::ifstream fin(filename);
@@ -65,27 +86,7 @@ void loadObj(Mesh *mesh, const std::string &filename) {
     }
     std::string line;
     int line_no = 0;
-    while (std::getline(fin, line)) {
-        boost::trim(line);
-        if (line.rfind("#") == 0) {
-            continue;
-        }
-        std::vector<std::string> tokens;
-        boost::split(tokens, line, [](char c){ return c == ' '; });
-        if (tokens[0] == "v") {
-            mesh->vertices.push_back(glm::fvec3(
-                strToFloat(tokens[1]),
-                strToFloat(tokens[2]),
-                strToFloat(tokens[3])));
-        } else if (tokens[0] == "f") {
-            mesh->face_vertices.push_back(glm::ivec3(
-                strToUInt32(tokens[1]),
-                strToUInt32(tokens[2]),
-                strToUInt32(tokens[3])));
-        } else if (tokens[0] == "vt") {
-        } else if (tokens[0] == "vn") {
-        } else if (tokens[0] == "vp") {
-        }
+    while (std::getline(fin, line) && parseLine(&line, mesh)) {
         line_no ++;
     }
 }

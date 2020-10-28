@@ -94,5 +94,5 @@ void renderTest() {
 
     renderToTextureBufferPass({{2 * 512, 2 * 512}},
         [&mesh](const Rendering &rendering){ renderMesh(rendering, mesh); },
-        [](const ImageBuffer &image_buffer){ dumpToPpmFile(image_buffer, "bunny.ppm"); });
+        [](const ImageBuffer &image_buffer){ dumpBufferToPpmFile(image_buffer, "bunny.ppm"); });
 }

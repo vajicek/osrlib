@@ -71,7 +71,7 @@ void renderYaml(const std::string yaml_file, const std::string output_file) {
     loadYaml(&rendering, yaml_file);
     renderToTextureBufferPass(rendering,
         [](const Rendering &rendering){ renderNodes(rendering, rendering.render_nodes); },
-        [&output_file](const ImageBuffer &image_buffer){ dumpToPpmFile(image_buffer, output_file); });
+        [&output_file](const ImageBuffer &image_buffer){ dumpBufferToPpmFile(image_buffer, output_file); });
 }
 
 void viewYaml(const std::string yaml_file) {
