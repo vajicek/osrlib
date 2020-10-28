@@ -1,10 +1,10 @@
-#include "core.h"
-
 #ifndef OSRLIB_TEST_H
 #define OSRLIB_TEST_H
 
-void drawCube();
+#include "core.h"
+
 void renderExample(const Rendering &rendering);
-void renderMesh(const Rendering &rendering, const Mesh &mesh);
+void interactiveTest();
+void renderTest();
 
 #endif // OSRLIB_TEST_H

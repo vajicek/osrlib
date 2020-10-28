@@ -1,7 +1,7 @@
-#include "core.h"
-
 #ifndef OSRLIB_IO_H
 #define OSRLIB_IO_H
+
+#include "core.h"
 
 void dumpBufferToRGBFile(const ImageBuffer &img, const std::string &filename);
 void dumpBufferToPpmFile(const ImageBuffer &img, const std::string &filename);

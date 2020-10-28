@@ -10,7 +10,7 @@ static const char* ARG_HELP = "help";
 static const char* ARG_OUTPUT = "output";
 static const char* ARG_YAML = "yaml";
 
-void setupCommandLineInterface(int argc, char* argv[],
+static void setupCommandLineInterface(int argc, char* argv[],
         po::options_description *options_description,
         po::variables_map *variables_map) {
     options_description->add_options()
@@ -22,7 +22,7 @@ void setupCommandLineInterface(int argc, char* argv[],
     po::notify(*variables_map);
 }
 
-int interpretCommandLineInterface(po::options_description *options_description,
+static int interpretCommandLineInterface(po::options_description *options_description,
         po::variables_map *variables_map) {
     if (variables_map->count(ARG_HELP)) {
         std::cout << *options_description << "\n";
@@ -38,7 +38,7 @@ int interpretCommandLineInterface(po::options_description *options_description,
     return 0;
 }
 
-int commandLineInterface(int argc, char* argv[]) {
+static int commandLineInterface(int argc, char* argv[]) {
     po::options_description options_description;
     po::variables_map variables_map;
     setupCommandLineInterface(argc, argv, &options_description, &variables_map);

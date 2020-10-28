@@ -49,15 +49,15 @@ void dumpTextureToPpmFile(GLuint renderedTextureId, const std::string &filename)
     dumpBufferToPpmFile(img, filename);
 }
 
-float strToFloat(const std::string &token) {
+static float strToFloat(const std::string &token) {
     return atof(token.c_str());
 }
 
-uint32_t strToUInt32(const std::string &token) {
+static uint32_t strToUInt32(const std::string &token) {
     return atoi(token.c_str()) - 1;
 }
 
-bool parseLine(std::string *line, Mesh *mesh) {
+static bool parseLine(std::string *line, Mesh *mesh) {
     boost::trim(*line);
     if (line->rfind("#") == 0) {
         return true;

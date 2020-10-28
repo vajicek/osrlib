@@ -7,7 +7,7 @@
 #include <sstream>
 #include <vector>
 
-void logMatrix(const float* m) {
+static void logMatrix(const float* m) {
     for(int i = 0; i < 4; i ++){
         std::stringstream ss;
         for(int j = 0; j < 4; j ++){
@@ -17,7 +17,7 @@ void logMatrix(const float* m) {
     }
 }
 
-void logGlMatrices() {
+static void logGlMatrices() {
     std::vector<float> m(16), p(16);
     glGetFloatv(GL_MODELVIEW_MATRIX, m.data());
     glGetFloatv(GL_PROJECTION_MATRIX, p.data());
@@ -61,7 +61,7 @@ void setupProjection(const View &view, const Camera &camera) {
         camera.up.x, camera.up.y, camera.up.z);
 }
 
-GLFWwindow* initializeGlfwWindow(const Rendering &rendering, bool offscreen) {
+static GLFWwindow* initializeGlfwWindow(const Rendering &rendering, bool offscreen) {
     if (!glfwInit()) {
         throw std::runtime_error("Failed to initialize glfw");
     }
@@ -82,7 +82,7 @@ GLFWwindow* initializeGlfwWindow(const Rendering &rendering, bool offscreen) {
     return window;
 }
 
-GLFWwindow* initializeOpenGlRuntime(const Rendering &rendering, bool offscreen) {
+static GLFWwindow* initializeOpenGlRuntime(const Rendering &rendering, bool offscreen) {
     GLFWwindow* window = initializeGlfwWindow(rendering, offscreen);
     if (glewInit() != GLEW_OK) {
         throw std::runtime_error("Failed to initialize GLEW");
@@ -103,14 +103,14 @@ void renderToOpenGLWindowLoop(const Rendering &rendering,
     glfwTerminate();
 }
 
-GLuint createFramebuffer() {
+static GLuint createFramebuffer() {
     GLuint framebufferId = 0;
     glGenFramebuffers(1, &framebufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
     return framebufferId;
 }
 
-GLuint createRenderTextureForFramebuffer(const Rendering &rendering) {
+static GLuint createRenderTextureForFramebuffer(const Rendering &rendering) {
     GLuint renderedTextureId;
     glGenTextures(1, &renderedTextureId);
     glBindTexture(GL_TEXTURE_2D, renderedTextureId);
@@ -121,7 +121,7 @@ GLuint createRenderTextureForFramebuffer(const Rendering &rendering) {
     return renderedTextureId;
 }
 
-void createDepthBufferForFramebuffer(const Rendering &rendering) {
+static void createDepthBufferForFramebuffer(const Rendering &rendering) {
     GLuint depthRenderBufferId;
     glGenRenderbuffers(1, &depthRenderBufferId);
     glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBufferId);
@@ -129,7 +129,7 @@ void createDepthBufferForFramebuffer(const Rendering &rendering) {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBufferId);
 }
 
-void enableAndValidateFramebuffer() {
+static void enableAndValidateFramebuffer() {
     GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, drawBuffers);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -137,7 +137,7 @@ void enableAndValidateFramebuffer() {
     }
 }
 
-void readPixels(ImageBuffer *img) {
+static void readPixels(ImageBuffer *img) {
     glReadPixels(0, 0, img->width(), img->height(),
         GL_RGB, GL_UNSIGNED_BYTE,
         img->data());
@@ -170,17 +170,17 @@ std::tuple<glm::fvec3, glm::fvec3> Mesh::getExtents() const {
     return std::make_tuple(min, max);
 }
 
-glm::fvec3 triangleNormal(const glm::fvec3 &v1, const glm::fvec3 &v2, const glm::fvec3 &v3) {
+static glm::fvec3 triangleNormal(const glm::fvec3 &v1, const glm::fvec3 &v2, const glm::fvec3 &v3) {
     return glm::normalize(glm::cross(glm::normalize(v1 - v2), glm::normalize(v3 - v2)));
 }
 
-glm::fvec3 triangleNormal(const std::vector<glm::fvec3> &vertices, const glm::u32vec3 &face_vertices) {
+static glm::fvec3 triangleNormal(const std::vector<glm::fvec3> &vertices, const glm::u32vec3 &face_vertices) {
     return triangleNormal(vertices[face_vertices[0]],
         vertices[face_vertices[1]],
         vertices[face_vertices[2]]);
 }
 
-std::vector<std::vector<uint32_t>> getVertexToFacesMapping(const Mesh &mesh) {
+static std::vector<std::vector<uint32_t>> getVertexToFacesMapping(const Mesh &mesh) {
     std::vector<std::vector<uint32_t>> vertex_faces(mesh.vertices.size());
     for (auto &v : mesh.face_vertices) {
         auto face_index = &v - mesh.face_vertices.data();
@@ -191,7 +191,7 @@ std::vector<std::vector<uint32_t>> getVertexToFacesMapping(const Mesh &mesh) {
     return vertex_faces;
 }
 
-glm::fvec3 computeVertexNormal(const Mesh &mesh, const std::vector<uint32_t> &incident_face_indices) {
+static glm::fvec3 computeVertexNormal(const Mesh &mesh, const std::vector<uint32_t> &incident_face_indices) {
     glm::fvec3 normal_sum(0);
     for (auto face_index : incident_face_indices) {
         auto face_vertices = mesh.face_vertices[face_index];

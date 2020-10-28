@@ -31,7 +31,7 @@ namespace YAML {
     };
 }
 
-std::map<std::string, Mesh> getMeshMap(const YAML::Node &root, fs::path root_dir) {
+static std::map<std::string, Mesh> getMeshMap(const YAML::Node &root, fs::path root_dir) {
     std::map<std::string, Mesh> mesh_map;
     for (auto mesh_node : root["meshes"]) {
         auto mesh_id = mesh_node["id"].as<std::string>();
@@ -42,7 +42,7 @@ std::map<std::string, Mesh> getMeshMap(const YAML::Node &root, fs::path root_dir
     return mesh_map;
 }
 
-std::vector<RenderNode> getRenderNodes(const YAML::Node &root, const std::map<std::string, Mesh> &mesh_map) {
+static std::vector<RenderNode> getRenderNodes(const YAML::Node &root, const std::map<std::string, Mesh> &mesh_map) {
     std::vector<RenderNode> render_nodes;
     for (auto yaml_render_node : root["nodes"]) {
         auto mesh_id = yaml_render_node["mesh"].as<std::string>();
@@ -57,7 +57,7 @@ std::vector<RenderNode> getRenderNodes(const YAML::Node &root, const std::map<st
     return render_nodes;
 }
 
-void loadYaml(Rendering *rendering, const std::string yaml_file) {
+static void loadYaml(Rendering *rendering, const std::string yaml_file) {
     const YAML::Node root = YAML::LoadFile(yaml_file);
     rendering->mesh_map = getMeshMap(root, fs::path(yaml_file).parent_path());
     rendering->render_nodes = getRenderNodes(root, rendering->mesh_map);

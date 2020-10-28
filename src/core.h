@@ -1,3 +1,6 @@
+#ifndef OSRLIB_CORE_H
+#define OSRLIB_CORE_H
+
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -10,9 +13,6 @@
 #include <map>
 #include <functional>
 #include <optional>
-
-#ifndef OSRLIB_CORE_H
-#define OSRLIB_CORE_H
 
 class View {
 public:

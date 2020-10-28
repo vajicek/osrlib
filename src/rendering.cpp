@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iostream>
 
-GLuint createIndicesBuffer(const Mesh &mesh) {
+static GLuint createIndicesBuffer(const Mesh &mesh) {
     GLuint element_buffer_id;
     glGenBuffers(1, &element_buffer_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_id);
@@ -17,7 +17,7 @@ GLuint createIndicesBuffer(const Mesh &mesh) {
     return element_buffer_id;
 }
 
-void drawMesh(const Mesh &mesh, GLuint element_buffer_id) {
+static void drawMesh(const Mesh &mesh, GLuint element_buffer_id) {
     glVertexPointer(3, GL_FLOAT, 0, mesh.vertices.data());
     glEnableClientState(GL_VERTEX_ARRAY);
 
@@ -33,7 +33,7 @@ void drawMesh(const Mesh &mesh, GLuint element_buffer_id) {
         (void*)0);
 }
 
-void setupLighting() {
+static void setupLighting() {
     glEnable(GL_LIGHTING);
     glClearDepth(1.0);
     glDepthFunc(GL_LESS);
@@ -50,7 +50,7 @@ void setupLighting() {
     glEnable(GL_LIGHT1);
 }
 
-void centerMesh(const Mesh &mesh) {
+static void centerMesh(const Mesh &mesh) {
     auto [min, max] = mesh.getExtents();
     auto translate = 0.5f * (min - max) - min;
     glTranslatef(translate.x, translate.y, translate.z);
@@ -70,7 +70,7 @@ void renderMesh(const Rendering &rendering, const Mesh &mesh) {
     drawMesh(mesh, createIndicesBuffer(mesh));
 }
 
-void initNodes(const std::vector<RenderNode> &render_nodes) {
+static void initNodes(const std::vector<RenderNode> &render_nodes) {
     for (auto &render_node : render_nodes) {
         if (render_node.elementBufferId.has_value()) {
             continue;
@@ -80,7 +80,7 @@ void initNodes(const std::vector<RenderNode> &render_nodes) {
     }
 }
 
-void drawNode(const RenderNode &render_node) {
+static void drawNode(const RenderNode &render_node) {
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
 
@@ -95,7 +95,7 @@ void drawNode(const RenderNode &render_node) {
     glPopMatrix();
 }
 
-void drawNodes(const Rendering &rendering, const std::vector<RenderNode> &render_nodes) {
+static void drawNodes(const Rendering &rendering, const std::vector<RenderNode> &render_nodes) {
     for (auto render_node : render_nodes) {
         drawNode(render_node);
     }

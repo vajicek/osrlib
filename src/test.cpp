@@ -45,7 +45,7 @@ static const GLfloat g_vertex_buffer_data[] = {
     1.0f,-1.0f, 1.0f
 };
 
-void drawCube() {
+static void drawCube() {
     glColor3f(1, 1, 0);
     glTranslatef(0, 0, 0.0);
 
@@ -54,7 +54,7 @@ void drawCube() {
     glDrawArrays(GL_LINE_LOOP, 0, 12 * 3);
 }
 
-void renderTest(const Rendering &rendering) {
+void renderExample(const Rendering &rendering) {
     View view {{0, 0}, {rendering.width(), rendering.height()},
         {-1.0, 1.0}, {-1.0, 1.0},
         1.0, 100.0};
