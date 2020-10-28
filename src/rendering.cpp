@@ -2,9 +2,10 @@
 
 #include <GL/glew.h>
 
-#include <limits>
 #include <algorithm>
 #include <iostream>
+#include <limits>
+#include <vector>
 
 static GLuint createIndicesBuffer(const Mesh &mesh) {
     GLuint element_buffer_id;
@@ -30,7 +31,7 @@ static void drawMesh(const Mesh &mesh, GLuint element_buffer_id) {
     glDrawElements(GL_TRIANGLES,
         mesh.face_vertices.size() * 3,
         GL_UNSIGNED_INT,
-        (void*)0);
+        reinterpret_cast<void*>(0));
 }
 
 static void setupLighting() {

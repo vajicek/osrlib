@@ -1,12 +1,15 @@
 #include "io.h"
 
 #include <GL/glew.h>
-#include <boost/algorithm/string.hpp>
 
 #include <cassert>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
+
+#include <boost/algorithm/string.hpp>
 
 void dumpBufferToRGBFile(const ImageBuffer &img, const std::string &filename) {
     std::ofstream fout;
@@ -87,6 +90,6 @@ void loadObj(Mesh *mesh, const std::string &filename) {
     std::string line;
     int line_no = 0;
     while (std::getline(fin, line) && parseLine(&line, mesh)) {
-        line_no ++;
+        line_no++;
     }
 }

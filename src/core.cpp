@@ -1,16 +1,20 @@
 #include "core.h"
-#include "io.h"
+
+#include <algorithm>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <vector>
+#include <tuple>
 
 #include <boost/log/trivial.hpp>
 
-#include <iostream>
-#include <sstream>
-#include <vector>
+#include "io.h"
 
 static void logMatrix(const float* m) {
-    for(int i = 0; i < 4; i ++){
+    for (int i = 0; i < 4; i ++) {
         std::stringstream ss;
-        for(int j = 0; j < 4; j ++){
+        for (int j = 0; j < 4; j ++) {
             ss << m[j * 4 + i] << ", ";
         }
         BOOST_LOG_TRIVIAL(debug) << ss.str();
@@ -114,7 +118,8 @@ static GLuint createRenderTextureForFramebuffer(const Rendering &rendering) {
     GLuint renderedTextureId;
     glGenTextures(1, &renderedTextureId);
     glBindTexture(GL_TEXTURE_2D, renderedTextureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rendering.width(), rendering.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, rendering.width(), rendering.height(),
+        0, GL_RGB, GL_UNSIGNED_BYTE, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTextureId, 0);
@@ -125,8 +130,10 @@ static void createDepthBufferForFramebuffer(const Rendering &rendering) {
     GLuint depthRenderBufferId;
     glGenRenderbuffers(1, &depthRenderBufferId);
     glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBufferId);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rendering.width(), rendering.height());
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBufferId);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+        rendering.width(), rendering.height());
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+        depthRenderBufferId);
 }
 
 static void enableAndValidateFramebuffer() {
@@ -161,11 +168,11 @@ void renderToTextureBufferPass(const Rendering &rendering,
 }
 
 std::tuple<glm::fvec3, glm::fvec3> Mesh::getExtents() const {
-    glm::fvec3 min(std::numeric_limits<float>::max());
-    glm::fvec3 max(std::numeric_limits<float>::min());
+    glm::fvec3 min_values(std::numeric_limits<float>::max());
+    glm::fvec3 max_values(std::numeric_limits<float>::min());
     for (auto v : vertices) {
-        min = glm::min(v, min);
-        max = glm::max(v, max);
+        min_values = glm::min(v, min_values);
+        max_values = glm::max(v, max_values);
     }
     return std::make_tuple(min, max);
 }
@@ -174,7 +181,8 @@ static glm::fvec3 triangleNormal(const glm::fvec3 &v1, const glm::fvec3 &v2, con
     return glm::normalize(glm::cross(glm::normalize(v1 - v2), glm::normalize(v3 - v2)));
 }
 
-static glm::fvec3 triangleNormal(const std::vector<glm::fvec3> &vertices, const glm::u32vec3 &face_vertices) {
+static glm::fvec3 triangleNormal(const std::vector<glm::fvec3> &vertices,
+        const glm::u32vec3 &face_vertices) {
     return triangleNormal(vertices[face_vertices[0]],
         vertices[face_vertices[1]],
         vertices[face_vertices[2]]);
@@ -191,7 +199,8 @@ static std::vector<std::vector<uint32_t>> getVertexToFacesMapping(const Mesh &me
     return vertex_faces;
 }
 
-static glm::fvec3 computeVertexNormal(const Mesh &mesh, const std::vector<uint32_t> &incident_face_indices) {
+static glm::fvec3 computeVertexNormal(const Mesh &mesh,
+        const std::vector<uint32_t> &incident_face_indices) {
     glm::fvec3 normal_sum(0);
     for (auto face_index : incident_face_indices) {
         auto face_vertices = mesh.face_vertices[face_index];

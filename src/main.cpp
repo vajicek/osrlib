@@ -1,8 +1,8 @@
-#include "yaml.h"
+#include <iostream>
 
 #include <boost/program_options.hpp>
 
-#include <iostream>
+#include "yaml.h"
 
 namespace po = boost::program_options;
 

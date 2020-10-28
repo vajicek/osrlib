@@ -1,48 +1,50 @@
 #include "test.h"
-#include "io.h"
-#include "rendering.h"
 
 #include <GL/glew.h>
 
 #include <chrono>
+#include <vector>
+
+#include "io.h"
+#include "rendering.h"
 
 static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-    -1.0f,-1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, // triangle 1 : end
-    1.0f, 1.0f,-1.0f, // triangle 2 : begin
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, // triangle 2 : end
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
+    -1.0f, -1.0f, -1.0f,  // triangle 1 : begin
+    -1.0f, -1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,  // triangle 1 : end
+    1.0f, 1.0f, -1.0f,  // triangle 2 : begin
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, 1.0f, -1.0f,  // triangle 2 : end
+    1.0f, -1.0f, 1.0f,
+    -1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
     -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, 1.0f,
+    -1.0f, -1.0f, 1.0f,
+    -1.0f, -1.0f, -1.0f,
     -1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
+    -1.0f, -1.0f, 1.0f,
+    1.0f, -1.0f, 1.0f,
     1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, 1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
     1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
+    1.0f, -1.0f, 1.0f,
     1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f,
+    1.0f, 1.0f, -1.0f,
+    -1.0f, 1.0f, -1.0f,
     1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f, -1.0f,
     -1.0f, 1.0f, 1.0f,
     1.0f, 1.0f, 1.0f,
     -1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
+    1.0f, -1.0f, 1.0f
 };
 
 static void drawCube() {
@@ -81,7 +83,7 @@ void interactiveTest() {
         [&nodes, &start]() {
             auto now = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = now - start;
-            for (auto &render_node: nodes) {
+            for (auto &render_node : nodes) {
                 render_node.angle_axis.w = elapsed_seconds.count() * 20;
             }
         });

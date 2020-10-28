@@ -1,35 +1,39 @@
 #include "yaml.h"
-#include "io.h"
-#include "rendering.h"
+
+#include <yaml-cpp/yaml.h>
 
 #include <iostream>
+#include <map>
+#include <vector>
 
 #include <boost/filesystem.hpp>
-#include <yaml-cpp/yaml.h>
+
+#include "io.h"
+#include "rendering.h"
 
 namespace fs = boost::filesystem;
 
 namespace YAML {
-    template<class T, int C>
-    struct convert<glm::vec<C, T>> {
-        static Node encode(const glm::vec<C, T>& rhs) {
-            Node node;
-            for (int i = 0; i < C; i++) {
-                node.push_back(rhs[i]);
-            }
-            return node;
+template<class T, int C>
+struct convert<glm::vec<C, T>> {
+    static Node encode(const glm::vec<C, T>& rhs) {
+        Node node;
+        for (int i = 0; i < C; i++) {
+            node.push_back(rhs[i]);
         }
-        static bool decode(const Node& node, glm::vec<C, T>& rhs) {
-            if(!node.IsSequence() || node.size() != C) {
-                return false;
-            }
-            for (int i = 0; i < C; i++) {
-                rhs[i] = node[i].as<T>();
-            }
-            return true;
+        return node;
+    }
+    static bool decode(const Node& node, glm::vec<C, T>& rhs) { //NOLINT
+        if (!node.IsSequence() || node.size() != C) {
+            return false;
         }
-    };
-}
+        for (int i = 0; i < C; i++) {
+            rhs[i] = node[i].as<T>();
+        }
+        return true;
+    }
+};
+}  // namespace YAML
 
 static std::map<std::string, Mesh> getMeshMap(const YAML::Node &root, fs::path root_dir) {
     std::map<std::string, Mesh> mesh_map;
@@ -42,7 +46,8 @@ static std::map<std::string, Mesh> getMeshMap(const YAML::Node &root, fs::path r
     return mesh_map;
 }
 
-static std::vector<RenderNode> getRenderNodes(const YAML::Node &root, const std::map<std::string, Mesh> &mesh_map) {
+static std::vector<RenderNode> getRenderNodes(const YAML::Node &root,
+        const std::map<std::string, Mesh> &mesh_map) {
     std::vector<RenderNode> render_nodes;
     for (auto yaml_render_node : root["nodes"]) {
         auto mesh_id = yaml_render_node["mesh"].as<std::string>();
@@ -71,7 +76,9 @@ void renderYaml(const std::string yaml_file, const std::string output_file) {
     loadYaml(&rendering, yaml_file);
     renderToTextureBufferPass(rendering,
         [](const Rendering &rendering){ renderNodes(rendering, rendering.render_nodes); },
-        [&output_file](const ImageBuffer &image_buffer){ dumpBufferToPpmFile(image_buffer, output_file); });
+        [&output_file](const ImageBuffer &image_buffer){
+            dumpBufferToPpmFile(image_buffer, output_file);
+        });
 }
 
 void viewYaml(const std::string yaml_file) {

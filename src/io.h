@@ -1,5 +1,7 @@
-#ifndef OSRLIB_IO_H
-#define OSRLIB_IO_H
+#ifndef IO_H_
+#define IO_H_
+
+#include <string>
 
 #include "core.h"
 
@@ -9,4 +11,4 @@ void dumpTextureToPpmFile(GLuint renderedTextureId, const std::string &filename)
 ImageBuffer dumpTextureToImageBuffer(GLuint renderedTextureId);
 void loadObj(Mesh *mesh, const std::string &filename);
 
-#endif // OSRLIB_IO_H
+#endif  // IO_H_

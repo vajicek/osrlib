@@ -1,21 +1,23 @@
-#ifndef OSRLIB_CORE_H
-#define OSRLIB_CORE_H
+#ifndef CORE_H_
+#define CORE_H_
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include <functional>
+#include <map>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
-#include <vector>
-#include <map>
-#include <functional>
-#include <optional>
-
 class View {
-public:
+ public:
     glm::ivec2 viewportTopLeftCorner;
     glm::ivec2 viewportBottomRightCorner;
     glm::dvec2 frustumLeftRightClippingPlane;
@@ -24,14 +26,14 @@ public:
 };
 
 class Camera {
-public:
+ public:
     glm::dvec3 position;
     glm::dvec3 lookAt;
     glm::dvec3 up;
 };
 
 class Mesh {
-public:
+ public:
     std::vector<glm::fvec3> vertices;
     std::vector<glm::fvec3> normals;
     std::vector<glm::fvec3> texcoords;
@@ -44,7 +46,7 @@ public:
 };
 
 class RenderNode {
-public:
+ public:
     const Mesh *mesh;
     std::optional<GLuint> elementBufferId;
     glm::fvec4 angle_axis;
@@ -54,7 +56,7 @@ public:
 class ImageBuffer {
     const int w, h;
     std::vector<u_int8_t> buffer;
-public:
+ public:
     ImageBuffer(int _w, int _h) : w(_w), h(_h), buffer(w * h * 3) {}
     const u_int8_t *data() const { return buffer.data(); }
     u_int8_t *data() { return buffer.data(); }
@@ -64,7 +66,7 @@ public:
 };
 
 class Rendering {
-public:
+ public:
     glm::ivec2 resolution;
     glm::fvec3 camera_position;
     glm::fvec3 camera_lookat;
@@ -83,4 +85,4 @@ void renderToTextureBufferPass(const Rendering &rendering,
         std::function<void(const Rendering &rendering)> renderFrameFunction,
         std::function<void(const ImageBuffer &img)> resultFunction);
 
-#endif // OSRLIB_CORE_H
+#endif  // CORE_H_
