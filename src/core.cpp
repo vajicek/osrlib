@@ -79,17 +79,21 @@ GLFWwindow* initializeGlfwWindow(const Rendering &rendering, bool offscreen) {
     }
     glfwMakeContextCurrent(window);
 
+    return window;
+}
+
+GLFWwindow* initializeOpenGlRuntime(const Rendering &rendering, bool offscreen) {
+    GLFWwindow* window = initializeGlfwWindow(rendering, offscreen);
     if (glewInit() != GLEW_OK) {
         throw std::runtime_error("Failed to initialize GLEW");
     }
-
     return window;
 }
 
 void renderToOpenGLWindowLoop(const Rendering &rendering,
         std::function<void(const Rendering &rendering)> renderFrameFunction,
         std::function<void()> updateFrameFunction) {
-    GLFWwindow* window = initializeGlfwWindow(rendering, false);
+    GLFWwindow* window = initializeOpenGlRuntime(rendering, false);
     while (!glfwWindowShouldClose(window)) {
         renderFrameFunction(rendering);
         updateFrameFunction();
@@ -142,7 +146,7 @@ void readPixels(ImageBuffer *img) {
 void renderToTextureBufferPass(const Rendering &rendering,
         std::function<void(const Rendering &rendering)> renderFrameFunction,
         std::function<void(const ImageBuffer &img)> resultFunction) {
-    GLFWwindow* window = initializeGlfwWindow(rendering, true);
+    initializeOpenGlRuntime(rendering, true);
 
     createFramebuffer();
     auto renderedTextureId = createRenderTextureForFramebuffer(rendering);
